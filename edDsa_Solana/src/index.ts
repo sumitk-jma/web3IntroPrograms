@@ -1,26 +1,25 @@
-import * as ed from "@noble/ed25519";
+import { Keypair } from "@solana/web3.js";
+import nacl from "tweetnacl";
 
-async function main() {
-  // Generate a secure random private key
-  const privKey = ed.utils.randomPrivateKey();
+// Generate a new keypair
+const keypair = Keypair.generate();
 
-  // Convert the message "hello world" to a Uint8Array
-  const message = new TextEncoder().encode("Sumit K");
+// Extract the public and private keys
+const publicKey = keypair.publicKey.toBase58();
+const secretKey = keypair.secretKey;
 
-  // Generate the public key from the private key
-  const pubKey = await ed.getPublicKeyAsync(privKey);
+// Display the keys
+console.log("Public Key:", publicKey);
+console.log("Private Key (Secret Key):", secretKey);
 
-  // Sign the message
-  const signature = await ed.signAsync(message, privKey);
+// Convert the message "hello world" to a Uint8Array
+const message = new TextEncoder().encode("Sumit K");
 
-  // Verify the signature
-  const isValid = await ed.verifyAsync(signature, message, pubKey);
+const signature = nacl.sign.detached(message, secretKey);
+const result = nacl.sign.detached.verify(
+  message,
+  signature,
+  keypair.publicKey.toBytes(),
+);
 
-  // Output the result
-  console.log(pubKey);
-  console.log(signature);
-  console.log(privKey);
-  console.log(isValid); // Should print `true` if the signature is valid
-}
-
-main();
+console.log(result);
